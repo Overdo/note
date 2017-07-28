@@ -2,7 +2,7 @@
 
 注解，也就是元数据，即一种描述数据的数据
 
-Java Annotation是JDK5.0引入的一种注释机制。
+Java **Annotation**是JDK5.0引入的一种注释机制。**Annotation**就是Java提供了一种元程序中的元素**关联任何信息和着任何元数据（metadata）的途径和方法**。Annotion(注解)是一个接口，程序**可以通过反射来获取指定程序元素的 Annotion对象，然后通过 Annotion对象 来获取注解里面的元数据。**
 
 先上一张来自网络的思维导图
 
@@ -129,7 +129,7 @@ public enum RetentionPolicy {
 ​     a) 若Annotation的类型为 SOURCE，则意味着：Annotation仅存在于编译器处理期间，编译器处理完之后，该Annotation就没用了。
 ​     例如，“ @Override ”标志就是一个Annotation。当它修饰一个方法的时候，就意味着该方法覆盖父类的方法；并且在编译期间会进行语法检查！编译器处理完后，“@Override”就没有任何作用了。
 ​     b) 若Annotation的类型为 CLASS，则意味着：编译器将Annotation存储于类对应的.class文件中，它是Annotation的默认行为。
-​     c) 若Annotation的类型为 RUNTIME，则意味着：编译器将Annotation存储于class文件中，并且可由JVM读入。
+​     c) 若Annotation的类型为 RUNTIME，则意味着：编译器将Annotation存储于class文件中，并且可由JVM读入。**这样注解处理器可以通过反射，获取到该注解的属性，从而做一些运行时的逻辑处理**。
 
 这时，只需要记住“每1个Annotation” 都与 “1个RetentionPolicy”关联，并且与 “1～n个ElementType”关联。学完后面的内容之后，再回头看这些内容，会更容易理解。
 
@@ -177,9 +177,8 @@ public @interface Deprecated {
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
-public @interface Inherited {
+	public @interface Inherited {
 }
-
 ```
 
 说明：
@@ -242,7 +241,53 @@ public @interface SuppressWarnings {
 
 
 
-## 四、Annotation 的作用
+## 四、自定义注解
+
+使用 **@interface** 自定义注解时，自动继承了 java.lang.annotation.Annotation 接口，由编译程序自动完成其他细节。在定义注解时，不能继承其他的注解或接口。@interface 用来声明一个注解，其中的每一个方法实际上是声明了一个配置参数。方法的名称就是参数的名称，返回值类型就是参数的类型（返回值类型只能是 基本类型、Class、String、enum）。可以通过 **default **来声明参数的默认值。
+
+自定义注解格式：
+
+**public @interface 注解名{注解体}**
+
+- 所有基本数据类型（int,float,boolean,byte,double,char,long,short)
+- String类型
+- Class类型
+- enum类型
+- Annotation类型
+- 以上所有类型的数组
+
+Annotation类型里面的参数该怎么设定:
+
+**第一,只能用 public 或 默认(default) 这两个访问权修饰.例如,String value();这里把方法设为 defaul 默认类型；**
+
+**第二,参数成员只能用基本类型 byte,short,char,int,long,float,double,boolean 八种基本数据类型 和 String,Enum,Class,annotations 等数据类型,以及这一些类型的数组.例如,String value();这里的参数成员就为String;**
+
+**第三,如果只有一个参数成员,最好把参数名称设为"value",后加小括号.例:下面的例子 Name 注解就只有一个参数成员。**
+
+
+
+## 五、注解处理器类库(java.lang.reflect.AnnotatedElement)
+
+注解元素Java使用 Annotation 接口来代表程序元素前面的注解，该接口是所有 Annotation类型 的父接口。除此之外，Java 在 java.lang.reflect 包下新增了 AnnotatedElement 接口，该接口代表程序中可以接受注解的程序元素，该接口主要有如下几个实现类：
+
+- **Class：**类定义
+- **Constructor：**构造器定义
+- **Field：**累的成员变量定义
+- **Method：**类的方法定义
+- **Package：**类的包定义
+
+当一个 Annotation 被定义为**运行时**Annotation后，改注解才是运行时可见的，当class文件被装载时被保存在class文件中的Annotation才会被虚拟机读取。 
+
+**AnnotatedElement **接口提供了以下四个方法来访问 Annotation 的信息：
+
+- **方法1：****\*<T extends Annotation> T getAnnotation(Class<T> annotationClass)*****:** 返回改程序元素上存在的、指定类型的注解，如果该类型注解不存在，则返回null。
+- **方法2：****\*Annotation[] getAnnotations()*****:**返回该程序元素上存在的所有注解。
+- **方法3：****\*boolean is AnnotationPresent(Class<?extends Annotation> annotationClass)*****:**判断该程序元素上是否包含指定类型的注解，存在则返回true，否则返回false.
+- **方法4：****\*Annotation[] getDeclaredAnnotations()*****：**返回直接存在于此元素上的所有注释。与此接口中的其他方法不同，该方法将忽略继承的注释。（如果没有注释直接存在于此元素上，则返回长度为零的一个数组。）该方法的调用者可以随意修改返回的数组；这不会对其他调用者返回的数组产生任何影响。
+
+示例代码见最后
+
+## 六、Annotation 的作用
 
 Annotation 是一个辅助类，它在Junit、Struts、Spring等工具框架中被广泛使用。
 
@@ -274,13 +319,15 @@ Annotation具有“让编译器进行编译检查的作用”。
 
 
 
-## 五、annotation的解析
+## 七、annotation的解析
 
 上面简单介绍了注解的定义，组成，常用注解，用途，接下来就是annotation信息的获取和使用处理了。
 
 我们通常使用Java反射机制从一个类中解析注解，请记住，**注解保持性策略应该是RUNTIME**，否则它的信息在运行期无效，我们也不能从中获取任何数据。
 
-具体代码留坑待填
+具体代码实例见xxx
+
+先自定义几个注解，然后在Person类中应用注解，最后在CustomAnnotationUtils类中获取并处理注解信息。
 
 
 
