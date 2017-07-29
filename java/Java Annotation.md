@@ -325,7 +325,7 @@ Annotation具有“让编译器进行编译检查的作用”。
 
 我们通常使用Java反射机制从一个类中解析注解，请记住，**注解保持性策略应该是RUNTIME**，否则它的信息在运行期无效，我们也不能从中获取任何数据。
 
-具体代码实例见xxx
+具体代码实例见https://github.com/Overdo/note/tree/master/demo/AnnotationTest
 
 先自定义几个注解，然后在Person类中应用注解，最后在CustomAnnotationUtils类中获取并处理注解信息。
 
